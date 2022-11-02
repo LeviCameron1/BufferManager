@@ -129,20 +129,20 @@ const Status BufMgr::allocBuf(int & frame)
     return BUFFEREXCEEDED;
 }
 
-const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
+const Status BufMgr::readPage(File* file, const int pageNo, Page*& page)
 {
     // check whether the page is already in the buffer pool
     Status status;
     int frameNo = 0;
-    status = hashTable->lookup(file, PageNo, frameNo);
+    status = hashTable->lookup(file, pageNo, frameNo);
 
     // the page is already in the buffer pool (Case 2)
     // frameNo is already updated in this case
     if (status == OK){
         // set the appropriate refbit / pinCnt
-        bufTable[frameNo].refbit = true
-        bufTable[frameNo].pinCnt += 1
-        return status
+        bufTable[frameNo].refbit = true;
+        bufTable[frameNo].pinCnt += 1;
+        return status;
     }
 
     // the page is NOT in the buffer pool (Case 1)
@@ -150,7 +150,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
     if (status != OK){
         return status;
     }
-    status = file->readPage(PageNo, page);
+    status = file->readPage(pageNo, page);
     if (status != OK){
         return status;
     }
@@ -161,7 +161,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
     }
     status = bufTable[frameNo]->Set(file, pageNo);
 
-    return status
+    return status;
 
 // note1: how to return the frameNo? through hashTable?
 // note2: create a new function status check & return??
@@ -198,6 +198,27 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
 
+Status status = OK;
+status = file->allocatePage(pageNo); // page no will be th evalue of the new page
+if (status != OK){
+    return status;
+}    
+
+int newframe = 0;
+
+status = allocBuf(newframe);
+if (status != OK){
+    return status;
+} 
+
+status = hashTable->insert(file,pageNo,newframe);
+if (status != OK){
+    return status;
+} 
+// NOT SURE ABOUT THE ERROR CATCHING HERE
+bufTable[newframe].Set(file,pageNo); // go to the position of the new frame
+
+return status;
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo) 
