@@ -129,12 +129,12 @@ const Status BufMgr::allocBuf(int & frame)
     return BUFFEREXCEEDED;
 }
 
-const Status BufMgr::readPage(File* file, const int pageNo, Page*& page)
+const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
     // check whether the page is already in the buffer pool
     Status status;
     int frameNo = 0;
-    status = hashTable->lookup(file, pageNo, frameNo);
+    status = hashTable->lookup(file, PageNo, frameNo);
 
     // the page is already in the buffer pool (Case 2)
     // frameNo is already updated in this case
@@ -150,20 +150,19 @@ const Status BufMgr::readPage(File* file, const int pageNo, Page*& page)
     if (status != OK){
         return status;
     }
-    status = file->readPage(pageNo, page);
+    // read the page from disk into the buffer pool frame
+    status = file->readPage(PageNo, &bufPool[frameNo]);
     if (status != OK){
         return status;
     }
-
-    status = hashTable->insert(file, pageNo, frameNo);
+    status = hashTable->insert(file, PageNo, frameNo);
     if (status != OK){
         return status;
     }
-    status = bufTable[frameNo]->Set(file, pageNo);
+    status = bufTable[frameNo]->Set(file, PageNo);
 
     return status;
 
-// note1: how to return the frameNo? through hashTable?
 // note2: create a new function status check & return??
 
 }
