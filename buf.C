@@ -158,7 +158,7 @@ const Status BufMgr::readPage(File* file, const int pageNo, Page*& page)
     if (status != OK){
         return status;
     }
-    status = bufTable[frameNo]->Set(file, pageNo);
+    bufTable[frameNo].Set(file, pageNo);
 
     return status;
 
@@ -194,7 +194,7 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     if all buffer frames are pinned and HASHTBLERROR if a hash table error occurred.  
 */
 
-const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
+const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) // new Page 
 {
 
 Status status = OK;
@@ -210,12 +210,13 @@ if (status != OK){
     return status;
 } 
 
+bufTable[newframe].Set(file,pageNo); // go to the position of the new frame
+
 status = hashTable->insert(file,pageNo,newframe);
 if (status != OK){
     return status;
 } 
 // NOT SURE ABOUT THE ERROR CATCHING HERE
-bufTable[newframe].Set(file,pageNo); // go to the position of the new frame
 
 return status;
 }
