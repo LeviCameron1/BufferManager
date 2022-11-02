@@ -166,6 +166,13 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
 
 
+Status s = file->allocatePage(pageNo); // page no will be th evalue of the new page
+//check if s if ok
+int newframe = 0;
+Status f = allocBuf(newframe);
+// TO DO : Check if f is ok
+hashTable->add(file,pageNo,newframe); 
+bufTable[newFrame].Set(file,pageNo); // go to the position of the new frame
 
 }
 
