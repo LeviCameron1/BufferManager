@@ -159,7 +159,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
     if (status != OK){
         return status;
     }
-    status = bufTable[frameNo]->Set(file, PageNo);
+    bufTable[frameNo].Set(file, PageNo);
 
     return status;
 
