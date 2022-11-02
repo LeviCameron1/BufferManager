@@ -74,56 +74,57 @@ BufMgr::~BufMgr() {
 */
 const Status BufMgr::allocBuf(int & frame) 
 {
-    advanceClock();
-    unsigned int tempClockHand = clockHand; // save current pos to determine a full clock cycle
-    do
-    {
-        BufDesc* tmpbuf = &bufTable[clockHand];
+    for (size_t i = 0; i < 2; i++)
+    {        
+        advanceClock();
+        unsigned int tempClockHand = clockHand; // save current pos to determine a full clock cycle
+        do
+        {
+            BufDesc* tmpbuf = &bufTable[clockHand];
 
-        //Valid is not set
-        if(tmpbuf->valid == false)
-        {
-            tmpbuf->Set(tmpbuf->file, tmpbuf->pageNo);
-            hashTable->remove(tmpbuf->file,tmpbuf->pageNo);
-            return OK;
-        }
-        //Ref bit is set
-        else if (tmpbuf->refbit == true)
-        {
-            tmpbuf->refbit = false;
-            advanceClock();
-            continue;
-        }
-        // page is pinned
-        else if (tmpbuf->pinCnt != 0)
-        {
-            advanceClock();
-            continue;
-        }
-        //Dirty bit is set
-        else if (tmpbuf->dirty == true) {
-            try
+            //Valid is not set
+            if(tmpbuf->valid == false)
             {
-                //flush page to disk and invoke Set() on frame
-                tmpbuf->file->writePage(tmpbuf->pageNo, &(bufPool[clockHand]));
-                tmpbuf->Set(tmpbuf->file, tmpbuf->pageNo);
+                frame = clockHand;
+                return OK;
+            }
+            //Ref bit is set
+            else if (tmpbuf->refbit == true)
+            {
+                tmpbuf->refbit = false;
+                advanceClock();
+                continue;
+            }
+            // page is pinned
+            else if (tmpbuf->pinCnt != 0)
+            {
+                advanceClock();
+                continue;
+            }
+            //Dirty bit is set
+            else if (tmpbuf->dirty == true) {
+                try
+                {
+                    //flush page to disk and remove from hashTable
+                    tmpbuf->file->writePage(tmpbuf->pageNo, &(bufPool[clockHand]));
+                    hashTable->remove(tmpbuf->file,tmpbuf->pageNo);
+                    frame = clockHand;
+                }
+                catch(const std::exception& e)
+                {
+                    return UNIXERR;
+                }
+                return OK;
+            }
+            //return frame
+            else{
+                // Since frame is valid we must remove from hashTable
                 hashTable->remove(tmpbuf->file,tmpbuf->pageNo);
+                frame = clockHand;
+                return OK;
             }
-            catch(const std::exception& e)
-            {
-                return UNIXERR;
-            }
-            return OK;
-        }
-        // Invoke Set() on Frame
-        else{
-            tmpbuf->Set(tmpbuf->file, tmpbuf->pageNo);
-            hashTable->remove(tmpbuf->file,tmpbuf->pageNo);
-            
-            return OK;
-        }
-
-    } while (clockHand != tempClockHand);
+        } while (clockHand != tempClockHand);
+    }
     //All buffer frames are pinned
     return BUFFEREXCEEDED;
 }
