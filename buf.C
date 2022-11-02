@@ -197,15 +197,21 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
 
+Status status = OK;
+status = file->allocatePage(pageNo); // page no will be th evalue of the new page
+if (status != OK){
+    return status;
+}    
 
-Status s = file->allocatePage(pageNo); // page no will be th evalue of the new page
-//check if s if ok
 int newframe = 0;
-Status f = allocBuf(newframe);
-// TO DO : Check if f is ok
+
+status = allocBuf(newframe);
+if (status != OK){
+    return status;
+} 
+
 hashTable->add(file,pageNo,newframe); 
 bufTable[newFrame].Set(file,pageNo); // go to the position of the new frame
-
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo) 
