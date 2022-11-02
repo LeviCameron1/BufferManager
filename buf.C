@@ -210,8 +210,14 @@ if (status != OK){
     return status;
 } 
 
-hashTable->add(file,pageNo,newframe); 
+status = hashTable->insert(file,pageNo,newframe);
+if (status != OK){
+    return status;
+} 
+// NOT SURE ABOUT THE ERROR CATCHING HERE
 bufTable[newFrame].Set(file,pageNo); // go to the position of the new frame
+
+return status
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo) 
