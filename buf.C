@@ -217,20 +217,20 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     if (status != OK){
         return status;
     }    
+    int frameNo = 0;
 
-    int newframe = 0;
-
-    status = allocBuf(newframe);
+    status = allocBuf(frameNo);
     if (status != OK){
         return status;
     } 
 
-    status = hashTable->insert(file,pageNo,newframe);
+    status = hashTable->insert(file,pageNo,frameNo);
     if (status != OK){
         return status;
     }
     // NOT SURE ABOUT THE ERROR CATCHING HERE
-    bufTable[newframe].Set(file,pageNo); // go to the position of the new frame
+    bufTable[frameNo].Set(file,pageNo); // go to the position of the new frame
+    page = &bufPool[frameNo];
 
     return status;
 }
