@@ -177,10 +177,25 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
+    int frameNo = 0;
+    Status status = hashTable->lookup(file, PageNo, frameNo);
+    if(status != OK){
+        return status;
+    }
 
-
-
+    BufDesc* tmpbuf = &bufTable[frameNo];
+    if (tmpbuf->pinCnt == 0)
+    {
+        return PAGENOTPINNED;
+    }
+    if (dirty)
+    {
+        tmpbuf->dirty = true;
+    }
+    tmpbuf->pinCnt -= 1;
+    return OK;
 }
+
 /*
     This call is kind of weird.  The first step is to to allocate an empty page
     in the specified file by invoking the file->allocatePage() method. 
@@ -197,27 +212,27 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
 
-Status status = OK;
-status = file->allocatePage(pageNo); // page no will be th evalue of the new page
-if (status != OK){
+    Status status = OK;
+    status = file->allocatePage(pageNo); // page no will be th evalue of the new page
+    if (status != OK){
+        return status;
+    }    
+
+    int newframe = 0;
+
+    status = allocBuf(newframe);
+    if (status != OK){
+        return status;
+    } 
+
+    status = hashTable->insert(file,pageNo,newframe);
+    if (status != OK){
+        return status;
+    }
+    // NOT SURE ABOUT THE ERROR CATCHING HERE
+    bufTable[newframe].Set(file,pageNo); // go to the position of the new frame
+
     return status;
-}    
-
-int newframe = 0;
-
-status = allocBuf(newframe);
-if (status != OK){
-    return status;
-} 
-
-status = hashTable->insert(file,pageNo,newframe);
-if (status != OK){
-    return status;
-} 
-// NOT SURE ABOUT THE ERROR CATCHING HERE
-bufTable[newframe].Set(file,pageNo); // go to the position of the new frame
-
-return status;
 }
 
 const Status BufMgr::disposePage(File* file, const int pageNo) 
