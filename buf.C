@@ -129,6 +129,9 @@ const Status BufMgr::allocBuf(int & frame)
     return BUFFEREXCEEDED;
 }
 
+// check if the page is already in the buffer pool
+// (Case 1) NOT in it -- read the page from disk into the buffer pool frame
+// (Case 2) already in it -- return the information
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
     // check whether the page is already in the buffer pool
@@ -142,6 +145,7 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         // set the appropriate refbit / pinCnt
         bufTable[frameNo].refbit = true;
         bufTable[frameNo].pinCnt += 1;
+        page = &bufPool[frameNo];
         return status;
     }
 
@@ -160,10 +164,9 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
         return status;
     }
     bufTable[frameNo].Set(file, PageNo);
+    page = &bufPool[frameNo];
 
     return status;
-
-// note2: create a new function status check & return??
 
 }
 
@@ -213,10 +216,10 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
 {
 
     Status status = OK;
-    status = file->allocatePage(pageNo); // page no will be th evalue of the new page
+    status = file->allocatePage(pageNo);
     if (status != OK){
         return status;
-    }    
+    }
     int frameNo = 0;
 
     status = allocBuf(frameNo);
@@ -228,8 +231,8 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page)
     if (status != OK){
         return status;
     }
-    // NOT SURE ABOUT THE ERROR CATCHING HERE
-    bufTable[frameNo].Set(file,pageNo); // go to the position of the new frame
+    // go to the position of the new frame
+    bufTable[frameNo].Set(file,pageNo);
     page = &bufPool[frameNo];
 
     return status;
