@@ -1,6 +1,7 @@
 /*
     Purpose: implements the functions of Buffer Manager
-    @author: Kohei Tagai (9084551077) -- please add!!!
+    @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565), Name (Student ID)
+
 */
 
 #include <memory.h>
