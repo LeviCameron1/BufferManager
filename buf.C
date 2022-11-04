@@ -227,24 +227,24 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) // new Page
 {
 
     Status status = OK;
-    status = file->allocatePage(pageNo);
+    status = file->allocatePage(pageNo); // get new page number
     if (status != OK){
         return status;
     }
     int frameNo = 0;
 
-    status = allocBuf(frameNo);
+    status = allocBuf(frameNo); // allocate a frame and get the frameNo
     if (status != OK){
         return status;
     } 
 
-    status = hashTable->insert(file, pageNo, frameNo);
+    status = hashTable->insert(file, pageNo, frameNo); 
     if (status != OK){
         return status;
     }
     // go to the position of the new frame
     bufTable[frameNo].Set(file, pageNo);
-    page = &bufPool[frameNo];
+    page = &bufPool[frameNo]; // set the page value to point to the bufferPool
     return status;
 }
 
