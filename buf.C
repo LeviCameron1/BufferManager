@@ -1,3 +1,8 @@
+/*
+    Purpose: implements the functions of Buffer Manager
+    @author: Kohei Tagai (9084551077) -- please add!!!
+*/
+
 #include <memory.h>
 #include <unistd.h>
 #include <errno.h>
@@ -129,9 +134,16 @@ const Status BufMgr::allocBuf(int & frame)
     return BUFFEREXCEEDED;
 }
 
-// check if the page is already in the buffer pool
-// (Case 1) NOT in it -- read the page from disk into the buffer pool frame
-// (Case 2) already in it -- return the information
+//---------------------------------------------------------------
+// get the pointer of the page in the buffer pool 
+// based on the other parameters (file and pageNo)
+// if the page is NOT in the buffer pool, 
+// read the page from disk into the buffer pool frame (Case 1)
+// 
+// inputs file, pageNo -- The information to get pointer of the page
+//        page -- the pointer that has the file and pageNo in the buffer pool
+// returns OK if no errors, another specific error if an error occurred
+//---------------------------------------------------------------
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
 {
     // check whether the page is already in the buffer pool
@@ -140,9 +152,8 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
     status = hashTable->lookup(file, PageNo, frameNo);
 
     // the page is already in the buffer pool (Case 2)
-    // frameNo is already updated in this case
     if (status == OK){
-        // set the appropriate refbit / pinCnt
+        // set the appropriate refbit / pinCnt and page
         bufTable[frameNo].refbit = true;
         bufTable[frameNo].pinCnt += 1;
         page = &bufPool[frameNo];
@@ -159,15 +170,15 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
     if (status != OK){
         return status;
     }
+    // insert the page into the hashtable
     status = hashTable->insert(file, PageNo, frameNo);
     if (status != OK){
         return status;
     }
+    // set the information to buffer table and page
     bufTable[frameNo].Set(file, PageNo);
     page = &bufPool[frameNo];
-
     return status;
-
 }
 
 /*
@@ -191,7 +202,7 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     {
         return PAGENOTPINNED;
     }
-    if (dirty)
+    if (dirty == true)
     {
         tmpbuf->dirty = true;
     }
@@ -227,14 +238,13 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) // new Page
         return status;
     } 
 
-    status = hashTable->insert(file,pageNo,frameNo);
+    status = hashTable->insert(file, pageNo, frameNo);
     if (status != OK){
         return status;
     }
     // go to the position of the new frame
-    bufTable[frameNo].Set(file,pageNo);
+    bufTable[frameNo].Set(file, pageNo);
     page = &bufPool[frameNo];
-
     return status;
 }
 
