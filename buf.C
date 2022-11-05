@@ -223,7 +223,15 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED
     if all buffer frames are pinned and HASHTBLERROR if a hash table error occurred.  
 */
+/*
+Allocates a new Page and allots it to a new frame in the buffer pool.
+Also puts this new relation in a hashtable. 
 
+Input has 3 parameters, a file pointer, a pageNo variable which will be the page number of our new page, and 
+lastly a page pointer which we will assign to our created page.
+Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED
+if all buffer frames are pinned and HASHTBLERROR if a hash table error occurred.  
+*/
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) // new Page 
 {
 
