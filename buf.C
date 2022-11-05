@@ -1,6 +1,6 @@
 /*
     Purpose: implements the functions of Buffer Manager
-    @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565), Shourya Agrawal (90816143)
+    @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565), Shourya Agrawal (9081614613)
 
 */
 
