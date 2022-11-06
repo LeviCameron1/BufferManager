@@ -1,5 +1,5 @@
 /*
-    Purpose: holds the hash table and 
+    Purpose: has the hash table's information
     @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565),
               Shourya Agrawal (9081614613)
 */
