@@ -1,7 +1,7 @@
 /*
     Purpose: implements the functions of Buffer Manager
-    @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565), Shourya Agrawal (9081614613)
-
+    @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565),
+              Shourya Agrawal (9081614613)
 */
 
 #include <memory.h>
@@ -68,22 +68,22 @@ BufMgr::~BufMgr() {
     delete [] bufPool;
 }
 
-
-/*
-    Allocates a free frame using the clock algorithm; if necessary,
-    writing a dirty page back to disk. Returns BUFFEREXCEEDED
-    if all buffer frames are pinned, 
-    UNIXERR if the call to the I/O layer returned an error 
-    when a dirty page was being written to disk and OK otherwise.  
-    This private method will get called by the readPage() and allocPage() 
-    methods described below.
-*/
+//---------------------------------------------------------------
+// Allocates a free frame using the clock algorithm; if necessary,
+// writing a dirty page back to disk. Returns BUFFEREXCEEDED
+// if all buffer frames are pinned, 
+// UNIXERR if the call to the I/O layer returned an error 
+// when a dirty page was being written to disk and OK otherwise.  
+// This private method will get called by the readPage() and allocPage() 
+// methods described below.
+//---------------------------------------------------------------
 const Status BufMgr::allocBuf(int & frame) 
 {
     for (size_t i = 0; i < 2; i++)
     {        
         advanceClock();
-        unsigned int tempClockHand = clockHand; // save current pos to determine a full clock cycle
+        // save current pos to determine a full clock cycle
+        unsigned int tempClockHand = clockHand;
         do
         {
             BufDesc* tmpbuf = &bufTable[clockHand];
@@ -140,7 +140,6 @@ const Status BufMgr::allocBuf(int & frame)
 // based on the other parameters (file and pageNo)
 // if the page is NOT in the buffer pool, 
 // read the page from disk into the buffer pool frame (Case 1)
-// 
 // inputs file, pageNo -- The information to get pointer of the page
 //        page -- the pointer that has the file and pageNo in the buffer pool
 // returns OK if no errors, another specific error if an error occurred
@@ -182,13 +181,13 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page)
     return status;
 }
 
-/*
-    Decrements the pinCnt of the frame containing (file, PageNo)
-    and, if dirty == true, sets the dirty bit.  
-    Returns OK if no errors occurred,
-    HASHNOTFOUND if the page is not in the buffer pool hash table,
-    PAGENOTPINNED if the pin count is already 0. 
-*/
+//---------------------------------------------------------------
+// Decrements the pinCnt of the frame containing (file, PageNo)
+// and, if dirty == true, sets the dirty bit.  
+// Returns OK if no errors occurred,
+// HASHNOTFOUND if the page is not in the buffer pool hash table,
+// PAGENOTPINNED if the pin count is already 0. 
+//---------------------------------------------------------------
 const Status BufMgr::unPinPage(File* file, const int PageNo, 
 			       const bool dirty) 
 {
@@ -211,27 +210,14 @@ const Status BufMgr::unPinPage(File* file, const int PageNo,
     return OK;
 }
 
-/*
-    This call is kind of weird.  The first step is to to allocate an empty page
-    in the specified file by invoking the file->allocatePage() method. 
-    This method will return the page number of the newly allocated page.
-    Then allocBuf() is called to obtain a buffer pool frame. 
-    Next, an entry is inserted into the hash table and Set() is invoked 
-    on the frame to set it up properly.  The method returns both the page 
-    number of the newly allocated page to the caller via the pageNo parameter 
-    and a pointer to the buffer frame allocated for the page via the page parameter.
-    Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED
-    if all buffer frames are pinned and HASHTBLERROR if a hash table error occurred.  
-*/
-/*
-Allocates a new Page and allots it to a new frame in the buffer pool.
-Also puts this new relation in a hashtable. 
-
-Input has 3 parameters, a file pointer, a pageNo variable which will be the page number of our new page, and 
-lastly a page pointer which we will assign to our created page.
-Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED
-if all buffer frames are pinned and HASHTBLERROR if a hash table error occurred.  
-*/
+//---------------------------------------------------------------
+// Allocates a new Page and allots it to a new frame in the buffer pool.
+// Also puts this new relation in a hashtable. 
+// Input has 3 parameters, a file pointer, a pageNo variable which will be the page number of our new page, and 
+// lastly a page pointer which we will assign to our created page.
+// Returns OK if no errors occurred, UNIXERR if a Unix error occurred, BUFFEREXCEEDED
+// if all buffer frames are pinned and HASHTBLERROR if a hash table error occurred.  
+//---------------------------------------------------------------
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) // new Page 
 {
 
@@ -327,5 +313,4 @@ void BufMgr::printSelf(void)
         cout << endl;
     };
 }
-
 
