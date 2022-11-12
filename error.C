@@ -4,6 +4,7 @@
 using namespace std;
 #include "error.h"
 #include "stdio.h"
+
 void Error::print(Status status)
 {
   cerr << "Error: ";

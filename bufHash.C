@@ -1,9 +1,3 @@
-/*
-    Purpose: has the hash table's information
-    @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565),
-              Shourya Agrawal (9081614613)
-*/
-
 #include <memory.h>
 #include <unistd.h>
 #include <errno.h>
@@ -18,11 +12,10 @@
 
 int BufHashTbl::hash(const File* file, const int pageNo)
 {
-  int tmp, value;
+  long tmp, value;
   tmp = (long)file;  // cast of pointer to the file object to an integer
-  value = (tmp + pageNo) % HTSIZE;
-  // add 'abs' to always return a positive value
-  return abs(value);
+  value = ((tmp + pageNo) % HTSIZE + HTSIZE) % HTSIZE;
+  return value;
 }
 
 

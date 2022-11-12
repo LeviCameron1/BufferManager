@@ -550,13 +550,11 @@ const Status DB::closeFile(File* file)
 {
   if (!file) return BADFILEPTR;
 
-
   // Close the file
   file->close();
 
   // If there are no remaining references to the file, then we should delete
-  // the file object and remove it from the openFilesMap
-
+  // the file object and remove it from the Map
   if (file->openCnt == 0)
     {
       if (openFiles.erase(file->fileName) != OK) return BADFILEPTR;
