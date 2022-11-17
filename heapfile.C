@@ -281,22 +281,65 @@ const Status HeapFileScan::resetScan()
 
 const Status HeapFileScan::scanNext(RID& outRid)
 {
-    Status 	status = OK;
-    RID		nextRid;
-    RID		tmpRid;
-    int 	nextPageNo;
+    //Status    status = OK;
+    RID     nextRid;
+    RID     tmpRid;
+    int     nextPageNo;
     Record      rec;
 
+    Status temp_status = OK;
+    int fr = 1; // first record
+    /*
+    The basic idea is to scan the file one page at a time. For each page, use the firstRecord() and nextRecord() methods of the Page class to get the rids 
+    of all the records on the page. Convert the rid to a pointer to the record data and invoke matchRec() to determine if record satisfies the filter associated 
+    with the scan. If so, store the rid in curRec and return curRec. To make things fast, keep the current page pinned until all the records on the page have been 
+    processed. Then continue with the next page in the file.  Since the HeapFileScan class is derived from the HeapFile class
+    it also has all the methods of the HeapFile class as well. Returns OK if no errors occurred. Otherwise, return the error code of the first error that 
+    occurred.
+    */
     
-	
-	
-	
-	
-	
-	
-	
-	
-	
+   // CAN A PAGE HAVE 0 RECORDS
+
+    while( temp_status == OK){// current page has next record
+        if (fr ==1){
+            temp_status = curPage->firstRecord(tmpRid);
+            fr = 0;
+            }
+        else{
+            temp_status = curPage->nextRecord(tmpRid,nextRid);
+        }
+
+        if( temp_status != OK) { // go to new Page
+            fr = 1; // still check for first record
+            temp_status = curPage->getNextPage(nextPageNo);
+            if( temp_status != OK) {return temp_status;} 
+            if (nextPageNo == -1) { // there is no next page
+                return FILEEOF;
+            }
+
+            temp_status = bufMgr->unPinPage(filePtr,curPageNo,curPage);
+            if( temp_status != OK) {return temp_status;}
+    
+            curPageNo = nextPageNo, curDirtyFlag = false;
+
+            temp_status = bufMgr->readPage(filePtr, curPageNo, curPage);
+            if( temp_status != OK) {return temp_status;}
+            else{
+                continue;
+            }
+        }
+
+        temp_status = curPage->getRecord(tmpRid,rec);
+        if( temp_status != OK) return temp_status;
+
+        if (matchRec(rec)) {
+            tmpRid = curRec;
+            return OK;
+        }
+
+       return FILEEOF; 
+    }
+    
 }
 
 
