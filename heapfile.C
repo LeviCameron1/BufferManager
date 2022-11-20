@@ -466,7 +466,6 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         }
     }
     curDirtyFlag = true;
-    // curRec = outRid;
     headerPage->recCnt++;
   
     return status;
