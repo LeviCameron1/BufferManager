@@ -174,12 +174,22 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
     //cout<< "getRecord. record (" << rid.pageNo << "." << rid.slotNo << ")" << endl;
     Status status;
 
-    status = bufMgr->readPage(filePtr,curPageNo,curPage);
-    if(status != OK){
-        return status;
+    if (curPage == NULL){
+        status = bufMgr->readPage(filePtr,rid.pageNo,curPage);
+        if(status != OK){
+            return status;
+        }
+        curPageNo = rid.pageNo;
+        curDirtyFlag = false;
+        curRec = rid;
     }
-    status = curPage->getRecord(rid,rec);
-    if(status != OK){
+
+    if(rid.pageNo == curPageNo){
+        status = curPage->getRecord(rid,rec);
+        return status;
+
+    }
+    else{
         
         status = bufMgr->unPinPage(filePtr,curPageNo,curDirtyFlag);
         if (status != OK){
@@ -190,6 +200,11 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
         if(status != OK){            
             return status;
         }
+
+        curPageNo = rid.pageNo;
+        curDirtyFlag = false;
+        curRec = rid;
+
         status = curPage->getRecord(rid,rec);
         if (status!= OK){
             return status;
