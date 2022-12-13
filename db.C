@@ -183,7 +183,7 @@ const Status File::destroy(const string & fileName)
 {
   if (remove(fileName.c_str()) < 0)
   {
-    cout << "db.destroy. unlink returned error" << "\n";
+    // cout << "db.destroy. unlink returned error" << "\n";
     return UNIXERR;
   }
 
@@ -550,11 +550,13 @@ const Status DB::closeFile(File* file)
 {
   if (!file) return BADFILEPTR;
 
+
   // Close the file
   file->close();
 
   // If there are no remaining references to the file, then we should delete
-  // the file object and remove it from the Map
+  // the file object and remove it from the openFilesMap
+
   if (file->openCnt == 0)
     {
       if (openFiles.erase(file->fileName) != OK) return BADFILEPTR;
