@@ -1,3 +1,9 @@
+/*
+    Purpose: implement a DELETE query
+    @authors: Kohei Tagai (9084551077), Levi Cameron (9081118565),
+              Shourya Agrawal (9081614613)
+*/
+
 #include "catalog.h"
 #include "query.h"
 
@@ -52,5 +58,4 @@ if(status != OK) return status;
 
 return OK;
 }
-
 
