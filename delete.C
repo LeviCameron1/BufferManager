@@ -26,7 +26,20 @@ if(status != OK) return status;
 	else{ // if input is not null get description of the attribute
 		AttrDesc attrDesc;
 		attrCat->getInfo(relation,attrName,attrDesc);
-		status = scan.startScan(attrDesc.attrOffset,attrDesc.attrLen,type,attrValue,op);
+		
+		if(type == FLOAT){// cast attrValue to type float
+			const float filter = atof(attrValue);
+			const float *fp = &filter;
+			memcpy(&attrValue,&fp, sizeof(attrValue));
+			status = scan.startScan(attrDesc.attrOffset,attrDesc.attrLen,type,attrValue,op);
+		}else if (type == INTEGER){// cast attrValue to type int
+			const int filter = atoi(attrValue);
+			const int *fp = &filter;
+			memcpy(&attrValue,&fp, sizeof(attrValue));
+			status = scan.startScan(attrDesc.attrOffset,attrDesc.attrLen,type,attrValue,op);
+		}else{//attrValue is type string
+			status = scan.startScan(attrDesc.attrOffset,attrDesc.attrLen,type,attrValue,op);
+		}
 	}
 
 	RID tmpRID;
