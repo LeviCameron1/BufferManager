@@ -90,7 +90,14 @@ const Status QU_Select(const string & result,
     return status;
 }
 
-// SELECT attr FROM table WHERE A op B
+
+/*
+ * implements select query
+ *
+ * Returns:
+ *  OK on success
+ *  an error code otherwise
+ */
 const Status ScanSelect(const string & result, 
 #include "stdio.h"
 #include "stdlib.h"
